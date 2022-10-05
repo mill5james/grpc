@@ -1,0 +1,76 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "dotnet build",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"build"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "dotnet clean",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"clean"
+			],
+			"group": "clean"
+		},
+		{
+			"label": "dotnet build client",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"build"
+			],
+			"options": {
+				"cwd": "./Client"
+			},
+			"hide": true,
+			"group": "build"
+		},
+		{
+			"label": "dotnet build server",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"build"
+			],
+			"options": {
+				"cwd": "./Server"
+			},
+			"hide": true,
+			"group": "build"
+		},
+		{
+			"label": "rust: cargo build",
+			"type": "cargo",
+			"command": "build",
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "build",
+			"options": {
+				"cwd": "./rust"
+			}
+		},
+		{
+			"label": "rust: cargo clean",
+			"type": "cargo",
+			"command": "clean",
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "clean",
+			"options": {
+				"cwd": "./rust"
+			}
+		}
+	]
+}
