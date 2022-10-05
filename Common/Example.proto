@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package GrpcExample;
+
+option csharp_namespace = "GrpcExample";
+
+message ClientRequest {
+    string message = 1;
+}
+
+message ServerResponse {
+    string message = 1;
+}
+
+message ClientStreamMsg {
+    string message = 1;
+}
+
+message ServerStreamMsg {
+    string message = 1;
+}
+
+service Example {
+    rpc Simple (ClientRequest) returns (ServerResponse);
+    rpc ClientStream (stream ClientStreamMsg) returns (ServerResponse);
+    rpc ServerStream (ClientRequest) returns (stream ServerStreamMsg);
+    rpc BiDirStream (stream ClientStreamMsg) returns (stream ServerStreamMsg);
+}
