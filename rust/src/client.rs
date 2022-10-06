@@ -1,15 +1,13 @@
 use std::io;
 use std::time::Duration;
 use tokio::time;
-
-use GrpcExample::{ClientRequest, ClientStreamMsg, example_client::ExampleClient};
 use tonic::transport::{ClientTlsConfig, Certificate, Channel};
 
-#[allow(non_snake_case)]
-pub mod GrpcExample {
+pub mod grpc_example {
   tonic::include_proto!("grpc_example");
 }
 
+use grpc_example::{ClientRequest, ClientStreamMsg, example_client::ExampleClient};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

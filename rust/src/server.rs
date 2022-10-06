@@ -6,12 +6,11 @@ use tokio::time;
 use tokio_stream::wrappers::ReceiverStream;
 use tonic::{Status, Request, Response, Streaming, transport::{Server, Identity, ServerTlsConfig}};
 
-use GrpcExample::{ClientRequest, ClientStreamMsg, ServerResponse, ServerStreamMsg, example_server::{Example, ExampleServer}};
-
-#[allow(non_snake_case)]
-pub mod GrpcExample {
+pub mod grpc_example {
   tonic::include_proto!("grpc_example");
 }
+use grpc_example::{ClientRequest, ClientStreamMsg, ServerResponse, ServerStreamMsg, example_server::{Example, ExampleServer}};
+
 
 #[derive(Debug, Default)]
 pub struct ExampleService {
