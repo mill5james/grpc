@@ -23,8 +23,8 @@ public class Program
         //Call unary method
         var reply = await client.SimpleAsync(new ClientRequest { Message = "world" });
         Console.WriteLine("Response: " + reply.Message);
-        Console.WriteLine("Press any key to continue...");
-        Console.Read();
+        Console.WriteLine("Press enter to continue...");
+        Console.ReadLine();
         using (var tokenSource = new CancellationTokenSource())
         {
             using (var clientStream = client.ClientStream(cancellationToken: tokenSource.Token))
@@ -40,8 +40,8 @@ public class Program
                 Console.WriteLine("=== Client Stream Complete ===");
                 var response = await clientStream.ResponseAsync;
                 Console.WriteLine($"Response: ServerResponse {response}");
-                Console.WriteLine("Press any key to continue...");
-                Console.Read();
+                Console.WriteLine("Press enter to continue...");
+                Console.ReadLine();
             }
 
             using (AsyncServerStreamingCall<ServerStreamMsg> asyncServerStreamingCall = client.ServerStream(new ClientRequest { Message = "21" }, cancellationToken: tokenSource.Token))
@@ -52,30 +52,9 @@ public class Program
                 }
             }
             Console.WriteLine("=== Server Stream Complete ===");
-
-            Console.Read();
+            Console.WriteLine("Press enter to continue...");
+            Console.ReadLine();
         }
     }
-
-    // static async Task ServerEvents(int id, Service.ServiceClient client, CancellationToken token)
-    // {
-    //     ClientIdentifer clientIdentifer = new ClientIdentifer { Id = id };
-
-    //     clientIdentifer.Subscriptions.AddRange(Enumerable.Range(0, rng.Next(2,20)).Select(_ => rng.Next(20)).Distinct());
-    //     // clientIdentifer.Subscriptions.AddRange(Enumerable.Range(0, 20));
-
-    //     Console.WriteLine($"ID:\t{clientIdentifer.Id}");
-    //     Console.WriteLine($"Subs:\t{string.Join(",", clientIdentifer.Subscriptions.OrderBy(_ => _))}");
-
-    //     using (AsyncServerStreamingCall<ServerMessage> keepAliveCall = client.ServerEvents(clientIdentifer, cancellationToken: token))
-    //     {
-    //         await foreach (var msg in keepAliveCall.ResponseStream.ReadAllAsync(token))
-    //         {
-    //             if (msg.Id == -1) break;
-    //             Console.WriteLine($"{msg.Id} - {msg.Message}");
-    //         }
-    //     }
-    //     Console.WriteLine("=== Stream Complete ===");
-    // }
 }
 
