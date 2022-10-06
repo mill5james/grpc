@@ -17,7 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut buffer = String::new();
 
     //let mut client = ExampleClient::connect("http://localhost:5001").await?;
-    let cert = std::fs::read_to_string("server.pem")?;
+    let cert = std::fs::read_to_string("localhost.pem")?;
     let channel = Channel::from_static("https://localhost:5001")
         .tls_config(ClientTlsConfig::new().ca_certificate(Certificate::from_pem(&cert)))?
         .connect()
