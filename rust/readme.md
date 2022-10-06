@@ -1,6 +1,34 @@
 # Rust gRPC implementation with Tonic
 
+This is an implementation of a gRPC service and client described in the [Example.proto](../Common/Example.proto) file using Rust leveraging the [tonic](https://docs.rs/tonic/latest/tonic/) crate. There is good information at the GitHub repository for [Tonic](https://github.com/hyperium/tonic) including [examples](https://github.com/hyperium/tonic/tree/master/examples) and additional documentation.
+
 ## Prerequisites
+
+### Protocol Buffer Compiler
+
+In order to build `tonic`, you need the Protocol Buffers compiler - `protoc`.
+
+#### Windows
+
+You can easily install this on Windows using the [Chocolatey](https://chocolatey.org/) package [protoc](https://community.chocolatey.org/packages/protoc)
+
+```text
+choco install protoc
+```
+
+#### MacOS
+
+On MacOS, use [Homebrew](https://brew.sh/) for easy installation
+
+``` bash
+brew install protobuf
+```
+
+#### Other OS
+
+Follow the instructions from the gRPC website [Protocol Buffer Compiler Installation](https://grpc.io/docs/protoc-installation/).
+
+### HTTPS certificate
 
 The Rust client and server need a certificate to validate the HTTPS connection. We borrow the .NET self-signed certificate for HTTPS to use in our client and server. To do this we export the certificate to a `certificate.pfx` with the password ***password*** then use the [openssl](https://community.chocolatey.org/packages/openssl) command to extract the `certificate.pem` and `certificate.key` files, entering in the password when prompted for a pass phrase.
 
