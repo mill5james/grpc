@@ -1,1 +1,4 @@
 /target
+*.pfx
+*.pem
+*.key

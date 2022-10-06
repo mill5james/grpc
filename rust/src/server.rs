@@ -86,8 +86,8 @@ impl Example for ExampleService {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::builder().filter_level(LevelFilter::Info).init();
 
-    let cert = std::fs::read_to_string("localhost.pem")?;
-    let key = std::fs::read_to_string("localhost.key")?;
+    let cert = std::fs::read_to_string("certificate.pem")?;
+    let key = std::fs::read_to_string("certificate.key")?;
 
     let identity = Identity::from_pem(cert, key);
     let addr = "[::1]:5001".parse()?;
