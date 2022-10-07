@@ -33,14 +33,13 @@ Follow the instructions from the gRPC website [Protocol Buffer Compiler Installa
 The Rust client and server need a certificate to validate the HTTPS connection. We borrow the .NET self-signed certificate for HTTPS to use in our client and server. To do this we export the certificate to a `certificate.pfx` with the password ***password*** then use the [openssl](https://community.chocolatey.org/packages/openssl) command to extract the `certificate.pem` and `certificate.key` files, entering in the password when prompted for a pass phrase.
 
 ``` text
-C:\grpc\rust> dotnet dev-certs https --export-path ./certificate.pfx --password password --trust --format pfx
+C:\grpc\rust> dotnet dev-certs https --export-path certificate.pfx --password password --trust --format pfx
 Trusting the HTTPS development certificate was requested. A confirmation prompt will be displayed if the certificate was not previously trusted. Click yes on the prompt to trust the certificate.
 A valid HTTPS certificate is already present.
-C:\grpc\rust> openssl x509 -in ./certificate.pfx -out ./certificate.pem -clcerts -nokeys
-Enter pass phrase for PKCS12 import pass phrase:
-C:\grpc\rust> openssl rsa -in ./certificate.pfx -out ./certificate.key
-Enter pass phrase for PKCS12 import pass phrase:
-writing RSA key
+C:\grpc\rust> openssl pkcs12 -in certificate.pfx -clcerts -nokeys | openssl x509 -out certificate.pem
+Enter Import Password:
+C:\grpc\rust> openssl pkcs12 -in certificate.pfx -nocerts -nodes | openssl pkcs8 -nocrypt -out certificate.key
+Enter Import Password:
 ```
 
 You should now have a `certificate.pem` and `certificate.key` file in your `grpc\rust` directory.
