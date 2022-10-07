@@ -6,13 +6,10 @@ namespace GrpcServer;
 
 public class ExampleService : Example.ExampleBase
 {
-    private readonly IEventGeneratorService generatorService;
     private readonly ILogger<ExampleService> logger;
-    public ExampleService(ILogger<ExampleService> logger, IEventGeneratorService generatorService)
+    public ExampleService(ILogger<ExampleService> logger)
     {
-        this.generatorService = generatorService;
         this.logger = logger;
-        
     }
 
     public override Task<ServerResponse> Simple(ClientRequest request, ServerCallContext context)

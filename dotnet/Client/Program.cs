@@ -1,5 +1,4 @@
-﻿//Added NuGet Package Grpc.Net.Client
-#nullable enable
+﻿#nullable enable
 
 using Grpc.Net.Client;
 using Grpc.Core;
@@ -9,24 +8,20 @@ namespace GrpcClient;
 
 public class Program
 {
-    private static Random rng = new Random();
-
     static async Task Main(string[] args)
     {
-        string?[] errors = {};
-        var error = string.Join(',', errors);
         var channel = GrpcChannel.ForAddress("https://localhost:5001");
         var client = new Example.ExampleClient(channel);
-
-        var id = rng.Next();
 
         //Call unary method
         var reply = await client.SimpleAsync(new ClientRequest { Message = "world" });
         Console.WriteLine("Response: " + reply.Message);
         Console.WriteLine("Press enter to continue...");
         Console.ReadLine();
+
         using (var tokenSource = new CancellationTokenSource())
         {
+            //Call client streaming method
             using (var clientStream = client.ClientStream(cancellationToken: tokenSource.Token))
             {
                 var writer = clientStream.RequestStream;
@@ -44,6 +39,7 @@ public class Program
                 Console.ReadLine();
             }
 
+            //Call server streaming method
             using (AsyncServerStreamingCall<ServerStreamMsg> asyncServerStreamingCall = client.ServerStream(new ClientRequest { Message = "21" }, cancellationToken: tokenSource.Token))
             {
                 await foreach (var msg in asyncServerStreamingCall.ResponseStream.ReadAllAsync(tokenSource.Token))
@@ -57,4 +53,3 @@ public class Program
         }
     }
 }
-

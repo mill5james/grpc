@@ -8,9 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddGrpc();
-builder.Services.AddSingleton<EventGeneratorService>();
-builder.Services.AddSingleton<IEventGeneratorService>(p => p.GetRequiredService<EventGeneratorService>());
-builder.Services.AddHostedService<EventGeneratorService>(p => p.GetRequiredService<EventGeneratorService>());
 
 var app = builder.Build();
 
