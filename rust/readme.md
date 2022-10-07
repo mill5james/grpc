@@ -75,7 +75,7 @@ C:\grpc\rust> cargo run --bin server
 To run the server we use `cargo run` with the `client` bin target
 
 ``` text
-C:\grpc\rust> cargo run --bin server
+C:\grpc\rust> cargo run --bin client
    Compiling grpc_example v0.1.0 (C:\grpc\rust)
     Finished dev [unoptimized + debuginfo] target(s) in 3.79s
      Running `target\debug\client.exe`
