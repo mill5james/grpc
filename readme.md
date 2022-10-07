@@ -8,9 +8,10 @@ A client implemented in one language can talk to a server implemented in either 
 
 - [Common](./Common/)
   - Contains the elements used by both client and server in all languages
-- [Client](./Client/)
-  - The gRPC .NET Console client
-- [Server](./Server/)
-  - The ASP.NET Core gRPC server
+- [dotnet](./dotnet/)
+  - [Client](./dotnet/Client/)
+    - The gRPC .NET Console client
+  - [Server](./dotnet/Server/)
+    - The ASP.NET Core gRPC server
 - [rust](./rust/)
   - The rust implementation of both the client and server
