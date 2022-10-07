@@ -7,9 +7,9 @@
             "request": "launch",
             "preLaunchTask": "dotnet build client",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/Client/bin/Debug/net6.0/Client.dll",
+            "program": "${workspaceFolder}/dotnet/Client/bin/Debug/net6.0/Client.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/Client",
+            "cwd": "${workspaceFolder}/dotnet/Client",
             "console": "internalConsole",
             "stopAtEntry": false
         },
@@ -18,9 +18,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "dotnet build server",
-            "program": "${workspaceFolder}/Server/bin/Debug/net6.0/Server.dll",
+            "program": "${workspaceFolder}/dotnet/Server/bin/Debug/net6.0/Server.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/Server",
+            "cwd": "${workspaceFolder}/dotnet/Server",
             "console": "internalConsole",
             "stopAtEntry": false
         }

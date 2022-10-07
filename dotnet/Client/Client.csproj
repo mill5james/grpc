@@ -11,6 +11,6 @@
     <PackageReference Include="Grpc.Tools" Version="2.49.1" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Common\Common.csproj" />
   </ItemGroup>
 </Project>

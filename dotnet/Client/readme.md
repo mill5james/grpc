@@ -6,10 +6,10 @@ The client can connect to the gRPC server from .NET or Rust.
 
 ## Building the Client
 
-Use the `dotnet build` command in the `.\Client` directory to build
+Use the `dotnet build` command in the `.\dotnet\Client` directory to build
 
 ``` console
-C:\grpc\Client> dotnet build
+C:\grpc\dotnet\Client> dotnet build
 MSBuild version 17.3.1+2badb37d1 for .NET
   Determining projects to restore...
   Restored C:\grpc\Common\Common.csproj (in 282 ms).
@@ -26,10 +26,10 @@ Time Elapsed 00:00:03.69
 
 ## Running the Client
 
-Use the `dotnet run` command in the `.\Client` directory to run. Make sure you run either the [.NET Server](../Server/readme.md) or [Rust server](../rust/readme.md) before starting the client.
+Use the `dotnet run` command in the `.\Client` directory to run. Make sure you run either the [.NET Server](../Server/readme.md) or [Rust server](../../rust/readme.md) before starting the client.
 
 ``` console
-C:\grpc\Client> dotnet run
+C:\grpc\dotnet\Client> dotnet run
 Response: Hello world
 Press enter to continue...
 .

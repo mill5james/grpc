@@ -1,6 +1,6 @@
 # Common Assets
 
-This project contains the [Example.proto](./Example.proto) file and the .NET Standard project to build the common assets for the .NET Client and server.
+This project contains the [Example.proto](./Example.proto) file and the .NET Standard project to build the common assets for the .NET Client and Server.
 
 ## Example.proto file
 

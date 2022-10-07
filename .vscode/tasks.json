@@ -30,7 +30,7 @@
 				"build"
 			],
 			"options": {
-				"cwd": "./Client"
+				"cwd": "./dotnet/Client"
 			},
 			"hide": true,
 			"group": "build"
@@ -43,7 +43,7 @@
 				"build"
 			],
 			"options": {
-				"cwd": "./Server"
+				"cwd": "./dotnet/Server"
 			},
 			"hide": true,
 			"group": "build"
