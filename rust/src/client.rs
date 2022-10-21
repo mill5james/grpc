@@ -1,4 +1,4 @@
-use std::io;
+use std::{io, fs};
 use std::time::Duration;
 use tokio::time;
 use tonic::transport::{ClientTlsConfig, Certificate, Channel};
@@ -15,7 +15,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut buffer = String::new();
 
     //let mut client = ExampleClient::connect("http://localhost:5001").await?;
-    let cert = std::fs::read_to_string("certificate.pem")?;
+    let cert = match fs::read_to_string("certificate.pem") {
+      Ok(value) => value,
+      Err(_) => panic!("Could not read the certificate.pem file - Please look at the readme.md")
+    };
     let channel = Channel::from_static("https://localhost:5001")
         .tls_config(ClientTlsConfig::new().ca_certificate(Certificate::from_pem(&cert)))?
         .connect()

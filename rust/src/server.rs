@@ -1,4 +1,5 @@
 use std::time::Duration;
+use std::fs;
 use log::LevelFilter;
 use futures::StreamExt;
 use tokio::sync::mpsc;
@@ -85,8 +86,15 @@ impl Example for ExampleService {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::builder().filter_level(LevelFilter::Info).init();
 
-    let cert = std::fs::read_to_string("certificate.pem")?;
-    let key = std::fs::read_to_string("certificate.key")?;
+    let cert = match fs::read_to_string("certificate.pem") {
+      Ok(value) => value,
+      Err(_) => panic!("Could not read the certificate.pem file - Please look at the readme.md")
+    };
+
+    let key = match fs::read_to_string("certificate.key") {
+      Ok(value) => value,
+      Err(_) => panic!("Could not read the certificate.key file - Please look at the readme.md")
+    };
 
     let identity = Identity::from_pem(cert, key);
     let addr = "[::1]:5001".parse()?;
