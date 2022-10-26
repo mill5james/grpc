@@ -1,85 +1,124 @@
-use std::time::Duration;
-use std::fs;
-use log::LevelFilter;
 use futures::StreamExt;
+use log::LevelFilter;
+use std::fs;
+use std::time::Duration;
 use tokio::sync::mpsc;
 use tokio::time;
 use tokio_stream::wrappers::ReceiverStream;
-use tonic::{Status, Request, Response, Streaming, transport::{Server, Identity, ServerTlsConfig}};
+use tonic::{
+    transport::{Identity, Server, ServerTlsConfig},
+    Request, Response, Status, Streaming,
+};
 
 pub mod grpc_example {
-  tonic::include_proto!("grpc_example");
+    tonic::include_proto!("grpc_example");
 }
-use grpc_example::{ClientRequest, ClientStreamMsg, ServerResponse, ServerStreamMsg, example_server::{Example, ExampleServer}};
-
+use grpc_example::{
+    example_server::{Example, ExampleServer},
+    ClientRequest, ClientStreamMsg, ServerResponse, ServerStreamMsg,
+};
 
 #[derive(Debug, Default)]
-pub struct ExampleService {
-}
+pub struct ExampleService {}
 
 #[tonic::async_trait]
 impl Example for ExampleService {
-        async fn simple(
-            &self,
-            request: Request<ClientRequest>,
-        ) -> Result<Response<ServerResponse>, Status> {
-          let client_req = request.into_inner();
-          Ok(Response::new(ServerResponse { message: format!("Hello {}", client_req.message )}))
-        }
+    async fn simple(
+        &self,
+        request: Request<ClientRequest>,
+    ) -> Result<Response<ServerResponse>, Status> {
+        let client_req = request.into_inner();
+        Ok(Response::new(ServerResponse {
+            message: format!("Hello {}", client_req.message),
+        }))
+    }
 
-        async fn client_stream(
-            &self,
-            request: Request<Streaming<ClientStreamMsg>>,
-        ) -> Result<Response<ServerResponse>, Status> {
-          let mut stream = request.into_inner();
-          let mut count = 0;
+    async fn client_stream(
+        &self,
+        request: Request<Streaming<ClientStreamMsg>>,
+    ) -> Result<Response<ServerResponse>, Status> {
+        let mut stream = request.into_inner();
+        let mut count = 0;
 
-          while let Some(client_msg) = stream.next().await {
+        while let Some(client_msg) = stream.next().await {
             let client_msg = client_msg?;
             log::info!("Received {:?}", client_msg);
             count += 1;
-
-          }
-
-          Ok(Response::new(ServerResponse { message: count.to_string() }))
         }
 
-        type ServerStreamStream = ReceiverStream<Result<ServerStreamMsg, Status>>;
-        async fn server_stream(
-          &self,
-          request: Request<ClientRequest>,
-        ) -> Result<Response<Self::ServerStreamStream>, Status> {
-          let client_req = request.into_inner();
-          let send_count: i32;
-          match client_req.message.parse::<i32>() {
-            Ok(n) => send_count = n,
-            Err(_e) => send_count = 10,
-          }
-          log::info!("Attempting to send {} messages", send_count);
+        Ok(Response::new(ServerResponse {
+            message: count.to_string(),
+        }))
+    }
 
-          let (tx, rx) = mpsc::channel(4);
-          tokio::spawn(async move {
+    type ServerStreamStream = ReceiverStream<Result<ServerStreamMsg, Status>>;
+    async fn server_stream(
+        &self,
+        request: Request<ClientRequest>,
+    ) -> Result<Response<Self::ServerStreamStream>, Status> {
+        let client_req = request.into_inner();
+        let send_count = match client_req.message.parse::<i32>() {
+            Ok(n) => n,
+            Err(_e) => 10,
+        };
+
+        log::info!("Attempting to send {} messages", send_count);
+
+        let (tx, rx) = mpsc::channel(4);
+        tokio::spawn(async move {
             let mut interval = time::interval(Duration::from_secs(1));
             for i in 0..send_count {
-              let server_msg = ServerStreamMsg{ message : format!("Message {}", i)};
-              log::info!("Sending {:?}", server_msg);
-              tx.send(Ok(server_msg)).await.unwrap();
-              interval.tick().await;
+                let server_msg = ServerStreamMsg {
+                    message: format!("Message {}", i),
+                };
+                log::info!("Sending {:?}", server_msg);
+                tx.send(Ok(server_msg)).await.unwrap();
+                interval.tick().await;
             }
-          });
-          Ok(Response::new(ReceiverStream::new(rx)))
+        });
+        Ok(Response::new(ReceiverStream::new(rx)))
+    }
 
-        }
+    type BiDirStreamStream = ReceiverStream<Result<ServerStreamMsg, Status>>;
 
-        type BiDirStreamStream: = ReceiverStream<Result<ServerStreamMsg, Status>>;
+    async fn bi_dir_stream(
+        &self,
+        request: Request<Streaming<ClientStreamMsg>>,
+    ) -> Result<Response<Self::BiDirStreamStream>, Status> {
+        let mut stream = request.into_inner();
 
-        async fn bi_dir_stream(
-          &self,
-          _request: Request<Streaming<ClientStreamMsg>>,
-        ) -> Result<Response<Self::BiDirStreamStream>, Status> {
-          unimplemented!()
-        }
+        let (request_tx, mut request_rx) = mpsc::channel(4);
+        tokio::spawn(async move {
+            while let Some(client_msg) = stream.next().await {
+                if client_msg.is_err() {
+                    break;
+                }
+                let msg = client_msg.unwrap();
+                log::info!("Received {:?}", msg);
+                request_tx.send(msg).await.unwrap();
+            }
+            request_tx.closed().await;
+        });
 
+        let (result_tx, result_rx) = mpsc::channel(4);
+        tokio::spawn(async move {
+            let mut interval = time::interval(Duration::from_secs(1));
+            while let Some(client_msg) = request_rx.recv().await {
+                let value: i32 = match client_msg.message.parse::<i32>() {
+                    Ok(n) => n,
+                    Err(_) => i32::MIN,
+                };
+                let server_msg = ServerStreamMsg {
+                    message: format!("{}", value + 1),
+                };
+                log::info!("Sending {:?}", server_msg);
+                result_tx.send(Ok(server_msg)).await.unwrap();
+                interval.tick().await;
+            }
+        });
+
+        Ok(Response::new(ReceiverStream::new(result_rx)))
+    }
 }
 
 #[tokio::main]
@@ -87,13 +126,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::builder().filter_level(LevelFilter::Info).init();
 
     let cert = match fs::read_to_string("certificate.pem") {
-      Ok(value) => value,
-      Err(_) => panic!("Could not read the certificate.pem file - Please look at the readme.md")
+        Ok(value) => value,
+        Err(_) => panic!("Could not read the certificate.pem file - Please look at the readme.md"),
     };
 
     let key = match fs::read_to_string("certificate.key") {
-      Ok(value) => value,
-      Err(_) => panic!("Could not read the certificate.key file - Please look at the readme.md")
+        Ok(value) => value,
+        Err(_) => panic!("Could not read the certificate.key file - Please look at the readme.md"),
     };
 
     let identity = Identity::from_pem(cert, key);
