@@ -1,6 +1,7 @@
 use futures::StreamExt;
 use log::LevelFilter;
 use std::fs;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::mpsc;
 use tokio::time;
@@ -19,7 +20,25 @@ use grpc_example::{
 };
 
 #[derive(Debug, Default)]
-pub struct ExampleService {}
+pub struct ExampleService {
+    history: Arc<Mutex<Vec<String>>>,
+}
+
+impl ExampleService {
+    fn new() -> Self {
+        Self {
+            history: Arc::new(Mutex::new(Vec::new())),
+        }
+    }
+
+    fn dump_db(&self) {
+        let values = self.history.lock().unwrap();
+        log::info!("history.len()={}", values.len());
+        for i in 0..values.len() {
+            log::info!("history[{}]={}", i, values.get(i).unwrap());
+        }
+    }
+}
 
 #[tonic::async_trait]
 impl Example for ExampleService {
@@ -44,6 +63,8 @@ impl Example for ExampleService {
             let client_msg = client_msg?;
             log::info!("Received {:?}", client_msg);
             count += 1;
+            let mut vec = self.history.lock().unwrap();
+            vec.push(format!("{:?}", client_msg));
         }
 
         Ok(Response::new(ServerResponse {
@@ -65,12 +86,18 @@ impl Example for ExampleService {
         log::info!("Attempting to send {} messages", send_count);
 
         let (tx, rx) = mpsc::channel(4);
+        let history = self.history.clone();
         tokio::spawn(async move {
             let mut interval = time::interval(Duration::from_secs(1));
             for i in 0..send_count {
                 let server_msg = ServerStreamMsg {
                     message: format!("Message {}", i),
                 };
+                {
+                    let mut vec = history.lock().unwrap();
+                    vec.push(format!("{:?}", server_msg));
+                }
+
                 log::info!("Sending {:?}", server_msg);
                 tx.send(Ok(server_msg)).await.unwrap();
                 interval.tick().await;
@@ -85,6 +112,8 @@ impl Example for ExampleService {
         &self,
         request: Request<Streaming<ClientStreamMsg>>,
     ) -> Result<Response<Self::BiDirStreamStream>, Status> {
+        self.dump_db();
+
         let mut stream = request.into_inner();
 
         let (request_tx, mut request_rx) = mpsc::channel(4);
@@ -137,7 +166,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let identity = Identity::from_pem(cert, key);
     let addr = "[::1]:5001".parse()?;
-    let service = ExampleService::default();
+
+    let service = ExampleService::new();
 
     Server::builder()
         .tls_config(ServerTlsConfig::new().identity(identity))?
