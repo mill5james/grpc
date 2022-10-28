@@ -115,35 +115,30 @@ impl Example for ExampleService {
         self.dump_db();
 
         let mut stream = request.into_inner();
+        let (result_tx, result_rx) = mpsc::channel(4);
 
-        let (request_tx, mut request_rx) = mpsc::channel(4);
         tokio::spawn(async move {
+            let mut interval = time::interval(Duration::from_secs(1));
             while let Some(client_msg) = stream.next().await {
                 if client_msg.is_err() {
                     break;
                 }
                 let msg = client_msg.unwrap();
                 log::info!("Received {:?}", msg);
-                request_tx.send(msg).await.unwrap();
-            }
-            request_tx.closed().await;
-        });
 
-        let (result_tx, result_rx) = mpsc::channel(4);
-        tokio::spawn(async move {
-            let mut interval = time::interval(Duration::from_secs(1));
-            while let Some(client_msg) = request_rx.recv().await {
-                let value: i32 = match client_msg.message.parse::<i32>() {
+                let value: i32 = match msg.message.parse::<i32>() {
                     Ok(n) => n,
                     Err(_) => i32::MIN,
                 };
                 let server_msg = ServerStreamMsg {
                     message: format!("{}", value + 1),
                 };
+
                 log::info!("Sending {:?}", server_msg);
                 result_tx.send(Ok(server_msg)).await.unwrap();
                 interval.tick().await;
             }
+            result_tx.closed().await;
         });
 
         Ok(Response::new(ReceiverStream::new(result_rx)))
