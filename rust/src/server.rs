@@ -5,6 +5,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::mpsc;
 use tokio::time;
+use tokio::signal;
 use tokio_stream::wrappers::ReceiverStream;
 use tonic::{
     transport::{Identity, Server, ServerTlsConfig},
@@ -164,11 +165,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let service = ExampleService::new();
 
-    Server::builder()
+    let shutdown = signal::ctrl_c();
+
+    // Concurrently run the server and listen for the `shutdown` signal. The
+    // server task runs until an error is encountered, so under normal
+    // circumstances, this `select!` statement runs until the `shutdown` signal
+    // is received.
+    tokio::select! {
+        res = Server::builder()
         .tls_config(ServerTlsConfig::new().identity(identity))?
         .add_service(ExampleServer::new(service))
-        .serve(addr)
-        .await?;
+        .serve(addr) => {
+            if let Err(err) = res {
+                log::error!("failed to start server - {:?}", err);
+            }
+        }
+        _ = shutdown => {
+            // The shutdown signal has been received.
+            log::info!("shutting down");
+        }
+    }
+
 
     Ok(())
 }
