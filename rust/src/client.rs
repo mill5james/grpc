@@ -9,7 +9,8 @@ pub mod grpc_example {
     tonic::include_proto!("grpc_example");
 }
 
-use grpc_example::{example_client::*, *};
+use grpc_example::example_client::ExampleClient;
+use grpc_example::{ClientRequest, ClientStreamMsg, ServerResponse};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -26,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .connect()
         .await?;
 
-    let mut client = ExampleClient::new(channel);
+    let mut client: ExampleClient<Channel> = ExampleClient::new(channel);
 
     let response: Response<ServerResponse> = client
         .simple(ClientRequest {
