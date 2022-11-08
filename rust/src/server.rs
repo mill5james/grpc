@@ -3,9 +3,9 @@ use log::LevelFilter;
 use std::fs;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use tokio::signal;
 use tokio::sync::mpsc;
 use tokio::time;
-use tokio::signal;
 use tokio_stream::wrappers::ReceiverStream;
 use tonic::{
     transport::{Identity, Server, ServerTlsConfig},
@@ -121,10 +121,7 @@ impl Example for ExampleService {
         tokio::spawn(async move {
             let mut interval = time::interval(Duration::from_secs(1));
             while let Some(client_msg) = stream.next().await {
-                if client_msg.is_err() {
-                    break;
-                }
-                let msg = client_msg.unwrap();
+                let msg: ClientStreamMsg = client_msg.unwrap(); 
                 log::info!("Received {:?}", msg);
 
                 let value: i32 = match msg.message.parse::<i32>() {
@@ -185,7 +182,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             log::info!("shutting down");
         }
     }
-
 
     Ok(())
 }
