@@ -136,7 +136,8 @@ impl Example for ExampleService {
                 result_tx.send(Ok(server_msg)).await.unwrap();
                 interval.tick().await;
             }
-            result_tx.closed().await;
+            //It is important _NOT_ to await the close here since it prevents cleanup
+            let _ = result_tx.closed();
         });
 
         Ok(Response::new(ReceiverStream::new(result_rx)))
