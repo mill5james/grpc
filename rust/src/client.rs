@@ -43,10 +43,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client_stream = async_stream::stream! {
       let mut interval = time::interval(Duration::from_secs(1));
       for i in 0..10 {
-        interval.tick().await;
         let client_msg = ClientStreamMsg { message : format!("Message {}", i)};
         println!("Sending {:?}", client_msg);
         yield client_msg;
+        interval.tick().await;
       }
     };
 
@@ -74,11 +74,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let up_stream = async_stream::stream! {
       let mut interval = time::interval(Duration::from_secs(1));
       let mut i = 0;
-      loop {
-        interval.tick().await;
+      for _ in 0..10 {
         let client_msg = ClientStreamMsg { message : format!("{}", i)};
         println!("Sending {:?}", client_msg);
         yield client_msg;
+        interval.tick().await;
         let value = rx.recv().await.unwrap();
         i = value + 1;
       }
@@ -93,9 +93,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Err(_) => i32::MIN,
         };
         tx.send(i).await.unwrap();
-        if i > 20 {
-            break;
-        }
     }
 
     Ok(())
